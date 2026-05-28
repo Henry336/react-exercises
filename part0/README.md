@@ -82,7 +82,7 @@ sequenceDiagram
 
         Note right of browser: The payload is sent as JSON
 
-        server-->>: HTTP status code 201 (created)
+        server-->>: status code 201 (created)
         deactivate server
 
         Note right of browser: The server responds with 201, confirming the data was saved. No redirect is issued. No CSS/JS is re-fetched.
