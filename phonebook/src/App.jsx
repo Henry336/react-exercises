@@ -3,23 +3,21 @@ import axios from 'axios'
 import Person from './components/Person'
 import AddForm from './components/AddForm'
 import Filter from './components/Filter'
+import phoneService from './services/phonebook'
 
 const App = () => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
-  const [newId, setNewId] = useState(5)
   const [filterName, setFilterName] = useState('')
 
   useEffect(() => {
-    console.log('effect')
-    axios
-      .get("http://localhost:3001/persons")
-      .then(response => {
-        console.log("reponse evaluated", response)
-        setPersons(response.data)
+    phoneService
+      .getAll()
+      .then(initPersons => {
+        setPersons(initPersons)
       })
-  })
+  }, [])
 
   const resetInput = () => {
     setNewName('')
@@ -33,19 +31,52 @@ const App = () => {
     const person = {
       name: newName,
       number: newNumber,
-      id: newId
     }
-
-    setNewId(newId + 1)
 
     const temp = persons.filter(person => person.name === newName)
     if (temp.length !== 0) {
-      window.alert(`${newName} is already added to phonebook`)
+      let result = window.confirm(`${newName} is already added to phonebook. Replace the old number with the new one?`)
+      if (!result) {
+        return
+      }
+
+      const target = temp[0]
+      const newPerson = {
+        ...target,
+        number: newNumber
+      }
+      
+      phoneService
+        .update(target.id, newPerson)
+        .then(returnedPerson => {
+          setPersons(persons.map(person => person.id === target.id ? newPerson : person))
+          resetInput()
+        })
+
       return
     }
 
-    setPersons(persons.concat(person))
-    resetInput()
+    phoneService
+      .create(person)
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))
+        resetInput()
+      })
+  }
+
+  const deletePerson = (id) => {
+    const target = persons.find(person => person.id === id)
+    let result = window.confirm(`Delete ${target.name}?`)
+
+    if (!result) {
+      console.log("Entry not deleted")
+      return
+    }
+
+    phoneService 
+      .deleteEntry(id)
+    
+    setPersons(persons.filter(person => person.id !== id))
   }
 
   const handleNameChange = (event) => {
@@ -87,7 +118,7 @@ const App = () => {
       <table>
         <tbody>
           {filteredPeople.map(person => (
-            <Person key={person.id} person={person}/>
+            <Person key={person.id} person={person} deletePerson={deletePerson}/>
           ))}
         </tbody>
       </table>
