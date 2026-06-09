@@ -4,12 +4,16 @@ import Person from './components/Person'
 import AddForm from './components/AddForm'
 import Filter from './components/Filter'
 import phoneService from './services/phonebook'
+import Notification from './components/Notification'
+import './index.css'
 
 const App = () => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filterName, setFilterName] = useState('')
+  const [error, setError] = useState(null)
+  const [noti, setNoti] = useState(null)
 
   useEffect(() => {
     phoneService
@@ -51,6 +55,13 @@ const App = () => {
         .then(returnedPerson => {
           setPersons(persons.map(person => person.id === target.id ? newPerson : person))
           resetInput()
+          setNoti(`Updated ${returnedPerson.name}'s phone number`)
+          setTimeout(() => { setNoti(null) }, 5000)
+        })
+        .catch(error => {
+          console.log("Error block triggered")
+          setError(`Information of ${newName} has already been removed from server`)
+          setTimeout(() => { setError(null) }, 5000)
         })
 
       return
@@ -61,6 +72,8 @@ const App = () => {
       .then(returnedPerson => {
         setPersons(persons.concat(returnedPerson))
         resetInput()
+        setNoti(`Added ${returnedPerson.name}`)
+        setTimeout(() => { setNoti(null) }, 5000)
       })
   }
 
@@ -104,6 +117,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={noti} type="noti"/>
+      <Notification message={error} type="error"/>
       <Filter name={filterName} func={handleFilterChange}/>
       <h3>Add New</h3>
       <AddForm 

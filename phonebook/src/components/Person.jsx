@@ -4,8 +4,9 @@ const Person = ({ person, deletePerson }) => {
             <tr>
                 <td>{person.name}</td>
                 <td>{person.number}</td>
-                <button onClick={() => deletePerson(person.id)}>delete</button>
             </tr>
+            <button onClick={() => deletePerson(person.id)}>delete</button>
+    
         </>
     )
 }

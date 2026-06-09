@@ -10,6 +10,7 @@ const create = newObj => {
 }
 
 const update = (id, newObj) => {
+    console.log("Update block triggered")
     return axios
             .put(`${baseUrl}/${id}`, newObj)
             .then(response => response.data)
