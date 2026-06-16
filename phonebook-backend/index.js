@@ -1,10 +1,11 @@
 const express = require('express')
 var morgan = require('morgan')
-const cors = require('cors')
+//const cors = require('cors')
 
 const app = express()
 app.use(express.json()) // json parsor for the POST method's body-reading
-app.use(cors()) // allow cross-origin requests (from frontend to backend)
+//app.use(cors()) // allow cross-origin requests (from frontend to backend)
+app.use(express.static('dist')) // deploy both frontend and backend from same url
 
 morgan.token('body', function getBody (req) {
   return JSON.stringify(req.body)
