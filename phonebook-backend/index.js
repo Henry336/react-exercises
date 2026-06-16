@@ -1,8 +1,10 @@
 const express = require('express')
 var morgan = require('morgan')
+const cors = require('cors')
 
 const app = express()
 app.use(express.json()) // json parsor for the POST method's body-reading
+app.use(cors()) // allow cross-origin requests (from frontend to backend)
 
 morgan.token('body', function getBody (req) {
   return JSON.stringify(req.body)
@@ -136,9 +138,9 @@ app.post('/api/persons', (request, response) => {
 })
 
 /**
- * Run the server on localhost:3001
+ * Run the server on the RENDER PORT OR default to localhost:3001
  */
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
     console.log(`Server running on ${PORT}`)
 })
