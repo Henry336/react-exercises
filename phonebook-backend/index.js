@@ -1,4 +1,7 @@
+require('dotenv').config() // load environment variables from .env file
 const express = require('express')
+const Person = require('./models/person') // CONNECT TO THE DATABASE
+
 var morgan = require('morgan')
 //const cors = require('cors')
 
@@ -26,31 +29,8 @@ app.use(morgan(function (tokens, req, res) {
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-let persons = [
-    { 
-      "id": "1",
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": "2",
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": "3",
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": "4",
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
-
 /**
- * Write something at the root
+ * Write something at the root (TEST)
  */
 app.get('/', (request, response) => {
   response.send('<h1>Placeholder Text</h1>')
@@ -60,13 +40,17 @@ app.get('/', (request, response) => {
  * GET all entries from the phonebook
  */
 app.get('/api/persons', (request, response) => {
-    response.json(persons)
+    Person.find({}).then(persons => {
+      response.json(persons)
+    })
 })
 
 /**
  * GET the number of entries in phonebook
  * and the time the request was made
- */
+ * 
+ * NOTE: This function is currently unavailable
+ * since we have linked up with a database
 app.get('/info', (request, response) => {
   const formattedTime = new Date().toString()
   response.send(
@@ -74,6 +58,7 @@ app.get('/info', (request, response) => {
     <p>${formattedTime}</p>`
   )
 })
+*/
 
 /**
  * GET the phonebook entry with the specified id
@@ -89,28 +74,58 @@ app.get('/api/persons/:id', (request, response) => {
   }
 })
 
+app.get('/api/persons/:id', (request, response) => {
+  const id = request.params.id
+  Person
+    .findById(id)
+    .then(person => {
+      if (person) {
+        response.json(person)
+      } else {
+        response.status(404).end() // 404 (NOT FOUND)
+      }
+    })
+    .catch(err => {
+      console.log("Failed to fetch person. Error:", err)
+      response.status(400).send({ error: 'wrongly formatted id'})
+    })
+
+})
+
 /**
  * DELETE the phonebook entry with the specified id
  */
 app.delete('/api/persons/:id', (request, response) => {
   const id = request.params.id
-  persons = persons.filter(p => p.id !== id) // only keep people that don't match the id-to-delete
-  response.status(204).end() // respond with 204 (no content)
+  Person
+    .findByIdAndDelete(id)
+    .then(
+      response.status(204).end()
+    )
+    .catch(err => {
+      console.log("Failed to delete. Error:", err)
+      response.status(400).send({ err: 'wrongly formatted id'})
+    })
+    
+  // persons = persons.filter(p => p.id !== id) // only keep people that don't match the id-to-delete
+  // response.status(204).end() // respond with 204 (no content)
   // because nothing is supposed to be returned from a delete request anyway
 })
 
+/**
+ * The following function is no longer used because we have linked the backend to a MongoDB
 function getRandomId() {
   const min = Math.max(...persons.map(p => p.id)) + 1 // get the current max id + 1
   const max = 10000000000000
   
   return Math.floor(Math.random() * (max - min + 1) + min).toString()
 }
+*/
 
 /**
  * POST (add) a new entry to the phonebook
  */
 app.post('/api/persons', (request, response) => {
-  const id = getRandomId()
   const body = request.body
   const nameExists = persons.some(p => p.name === body.name)
 
@@ -126,15 +141,22 @@ app.post('/api/persons', (request, response) => {
     })
   }
 
-  const person = {
-    id: id,
+  const person = new Person({
     name: body.name,
     number: body.number
-  }
+  })
 
-  persons = persons.concat(person)
+  // save person to the database
+  person
+    .save()
+    .then(savedPerson => {
+      response.json(savedPerson)
+    })
+
+
+  //persons = persons.concat(person)
   //console.log(person)
-  response.json(person)
+  //response.json(person)
   //response.send(`${person.name} has been added to the phonebook!`)
 })
 
