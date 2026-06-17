@@ -65,17 +65,6 @@ app.get('/info', (request, response) => {
  */
 app.get('/api/persons/:id', (request, response) => {
   const id = request.params.id
-  const person = persons.find(p => p.id === id)
-
-  if (!person) {
-    response.status(404).end() // respond with 404 (not found) if person isn't in records
-  } else {
-    response.json(person)
-  }
-})
-
-app.get('/api/persons/:id', (request, response) => {
-  const id = request.params.id
   Person
     .findById(id)
     .then(person => {
