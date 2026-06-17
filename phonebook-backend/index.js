@@ -39,10 +39,12 @@ app.get('/', (request, response) => {
 /**
  * GET all entries from the phonebook
  */
-app.get('/api/persons', (request, response) => {
-    Person.find({}).then(persons => {
-      response.json(persons)
-    })
+app.get('/api/persons', (request, response, next) => {
+    Person.find({})
+      .then(persons => {
+        response.json(persons)
+      })
+      .catch(err => next(err))
 })
 
 /**
@@ -63,7 +65,7 @@ app.get('/info', (request, response) => {
 /**
  * GET the phonebook entry with the specified id
  */
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
   const id = request.params.id
   Person
     .findById(id)
@@ -74,31 +76,20 @@ app.get('/api/persons/:id', (request, response) => {
         response.status(404).end() // 404 (NOT FOUND)
       }
     })
-    .catch(err => {
-      console.log("Failed to fetch person. Error:", err)
-      response.status(400).send({ error: 'wrongly formatted id'})
-    })
-
+    .catch(err => next(err))
 })
 
 /**
  * DELETE the phonebook entry with the specified id
  */
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
   const id = request.params.id
   Person
     .findByIdAndDelete(id)
-    .then(
+    .then(() => {
       response.status(204).end()
-    )
-    .catch(err => {
-      console.log("Failed to delete. Error:", err)
-      response.status(400).send({ err: 'wrongly formatted id'})
     })
-    
-  // persons = persons.filter(p => p.id !== id) // only keep people that don't match the id-to-delete
-  // response.status(204).end() // respond with 204 (no content)
-  // because nothing is supposed to be returned from a delete request anyway
+    .catch(err => next(err))
 })
 
 /**
@@ -114,18 +105,8 @@ function getRandomId() {
 /**
  * POST (add) a new entry to the phonebook
  */
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const body = request.body
-  // const nameExists = persons.some(p => p.name === body.name) Haven't implemented yet
-
-  /** 
-   * The following functionality hasn't been integrated with the database yet
-  if (nameExists) {
-    return response.status(400).json({
-      error: "name must be unique"
-    })
-  }
-    */
 
   if (!body.name || !body.number) {
     return response.status(400).json({
@@ -145,17 +126,19 @@ app.post('/api/persons', (request, response) => {
       console.log(`${savedPerson.name} ${savedPerson.number} has been saved to phonebook`)
       response.json(savedPerson)
     })
-    .catch(err => {
-      console.log("Error encountered while saving:", err)
-      response.status(500).end()
-    })
-
-
-  //persons = persons.concat(person)
-  //console.log(person)
-  //response.json(person)
-  //response.send(`${person.name} has been added to the phonebook!`)
+    .catch(err => next(err))
 })
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: "wrongly formatted id"})
+  }
+
+  next(error)
+}
+app.use(errorHandler)
 
 /**
  * Run the server on the RENDER PORT OR default to localhost:3001
