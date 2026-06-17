@@ -116,17 +116,20 @@ function getRandomId() {
  */
 app.post('/api/persons', (request, response) => {
   const body = request.body
-  const nameExists = persons.some(p => p.name === body.name)
+  // const nameExists = persons.some(p => p.name === body.name) Haven't implemented yet
 
+  /** 
+   * The following functionality hasn't been integrated with the database yet
   if (nameExists) {
     return response.status(400).json({
       error: "name must be unique"
     })
   }
+    */
 
   if (!body.name || !body.number) {
     return response.status(400).json({
-      error: "Name and number missing"
+      error: "Name and/or number missing"
     })
   }
 
@@ -139,7 +142,12 @@ app.post('/api/persons', (request, response) => {
   person
     .save()
     .then(savedPerson => {
+      console.log(`${savedPerson.name} ${savedPerson.number} has been saved to phonebook`)
       response.json(savedPerson)
+    })
+    .catch(err => {
+      console.log("Error encountered while saving:", err)
+      response.status(500).end()
     })
 
 
