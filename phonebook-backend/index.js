@@ -51,16 +51,22 @@ app.get('/api/persons', (request, response, next) => {
  * GET the number of entries in phonebook
  * and the time the request was made
  * 
- * NOTE: This function is currently unavailable
- * since we have linked up with a database
+*/
 app.get('/info', (request, response) => {
   const formattedTime = new Date().toString()
-  response.send(
-    `<p>Phonebook has info for ${persons.length} people</p>
-    <p>${formattedTime}</p>`
-  )
+  Person
+    .find({})
+    .then(persons => {
+      response.send(
+        `<p>Phonebook has info for ${persons.length} people</p>
+        <p>${formattedTime}</p>`
+      )
+    })
+    .catch(err => {
+      response.status(500).end()
+    })
 })
-*/
+
 
 /**
  * GET the phonebook entry with the specified id
