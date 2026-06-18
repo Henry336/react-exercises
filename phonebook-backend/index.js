@@ -103,6 +103,32 @@ function getRandomId() {
 */
 
 /**
+ * UPDATE the phonebook entry with the specified id
+ */
+app.post('/api/persons/:id', (request, response, next) => {
+  const body = request.body
+
+  if (!body.name || !body.number) {
+    return response.status(400).json({
+      error: "Name and/or number missing"
+    })
+  }
+
+  const newPerson = new Person({
+    name: body.name,
+    number: body.number
+  })
+
+  Person
+    .findOneAndReplace({ name: body.name }, newPerson)
+    .then(replacedPerson => {
+      console.log(`${replacedPerson.name}'s contact updated to ${replacedPerson.number}`)
+      response.json(replacedPerson)
+    })
+    .catch(err => next(err))
+})
+
+/**
  * POST (add) a new entry to the phonebook
  */
 app.post('/api/persons', (request, response, next) => {
