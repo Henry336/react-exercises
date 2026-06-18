@@ -76,7 +76,9 @@ const App = () => {
         setTimeout(() => { setNoti(null) }, 5000)
       })
       .catch(error => {
+        setNoti(`Person validation failed: ${error.response.data.error}`)
         console.log(error.response.data.error)
+        setTimeout(() => { setNoti(null) }, 5000)
       })
   }
 
