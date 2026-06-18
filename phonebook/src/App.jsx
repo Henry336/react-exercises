@@ -39,11 +39,6 @@ const App = () => {
 
     const temp = persons.filter(person => person.name === newName)
     if (temp.length !== 0) {
-      let result = window.confirm(`${newName} is already added to phonebook. Replace the old number with the new one?`)
-      if (!result) {
-        return
-      }
-
       const target = temp[0]
       const newPerson = {
         ...target,
@@ -53,6 +48,10 @@ const App = () => {
       phoneService
         .update(target.id, newPerson)
         .then(returnedPerson => {
+          let result = window.confirm(`${newName} is already added to phonebook. Replace the old number with the new one?`)
+          if (!result) {
+            return
+          }
           setPersons(persons.map(person => person.id === target.id ? newPerson : person))
           resetInput()
           setNoti(`Updated ${returnedPerson.name}'s phone number`)
@@ -60,7 +59,8 @@ const App = () => {
         })
         .catch(error => {
           console.log("Error block triggered")
-          setError(`Information of ${newName} has already been removed from server`)
+          //setError(`Information of ${newName} has already been removed from server`)
+          setError(`Person validation failed: ${error.response.data.error}`)
           setTimeout(() => { setError(null) }, 5000)
         })
 
@@ -76,9 +76,9 @@ const App = () => {
         setTimeout(() => { setNoti(null) }, 5000)
       })
       .catch(error => {
-        setNoti(`Person validation failed: ${error.response.data.error}`)
+        setError(`Person validation failed: ${error.response.data.error}`)
         console.log(error.response.data.error)
-        setTimeout(() => { setNoti(null) }, 5000)
+        setTimeout(() => { setError(null) }, 5000)
       })
   }
 
