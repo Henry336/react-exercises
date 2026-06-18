@@ -161,6 +161,12 @@ app.post('/api/persons', (request, response, next) => {
   person
     .save()
     .then(savedPerson => {
+      if (body.number.length > 15) {
+        const error = new Error('Number cannot be longer than 15 digits')
+        error.name = 'ValidationError'
+        error.status = 400
+        throw error
+      }
       console.log(`${savedPerson.name} ${savedPerson.number} has been saved to phonebook`)
       response.json(savedPerson)
     })
