@@ -161,6 +161,12 @@ app.post('/api/persons', (request, response, next) => {
   person
     .save()
     .then(savedPerson => {
+      if (bdoy.name.length > 20) {
+        const error = new Error('Name cannot be longer than 20 characters')
+        error.name = 'ValidationError'
+        error.status = 400
+        throw error
+      }
       if (body.number.length > 15) {
         const error = new Error('Number cannot be longer than 15 digits')
         error.name = 'ValidationError'
