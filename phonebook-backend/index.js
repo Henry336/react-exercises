@@ -120,7 +120,7 @@ app.put('/api/persons/:id', (request, response, next) => {
     })
   }
 
-  const { name, contact } = body
+  const { name, number } = body
 
   Person
     .findById(request.params.id)
@@ -130,11 +130,12 @@ app.put('/api/persons/:id', (request, response, next) => {
       }
 
       person.name = name
-      person.contact = contact
+      person.number = number
 
-      return person.save().then(updatedPerson => {
-        response.json(updatedPerson)
-      }).catch(err => response.status(500).end())
+      return person.save()
+    })
+    .then(updatedPerson => {
+      response.json(updatedPerson)
     })
     .catch(err => next(err))
 })
@@ -171,6 +172,8 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: "wrongly formatted id"})
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
   }
 
   next(error)

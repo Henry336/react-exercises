@@ -75,6 +75,9 @@ const App = () => {
         setNoti(`Added ${returnedPerson.name}`)
         setTimeout(() => { setNoti(null) }, 5000)
       })
+      .catch(error => {
+        console.log(error.response.data.error)
+      })
   }
 
   const deletePerson = (id) => {
