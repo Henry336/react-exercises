@@ -19,6 +19,11 @@ mongoose.connect(url)
 const personSchema = new mongoose.Schema({
   name: {
     type: String,
+    validate: {
+        validator: function(v) {
+            return /^[a-zA-Z\s]+$/.test(v)
+        }
+    },
     minLength: 3,
     required: true
   },
