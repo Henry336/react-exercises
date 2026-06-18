@@ -105,7 +105,7 @@ function getRandomId() {
 /**
  * UPDATE the phonebook entry with the specified id
  */
-app.post('/api/persons/:id', (request, response, next) => {
+app.put('/api/persons/:id', (request, response, next) => {
   const body = request.body
 
   if (!body.name || !body.number) {
@@ -114,16 +114,21 @@ app.post('/api/persons/:id', (request, response, next) => {
     })
   }
 
-  const newPerson = new Person({
-    name: body.name,
-    number: body.number
-  })
+  const { name, contact } = body
 
   Person
-    .findOneAndReplace({ name: body.name }, newPerson)
-    .then(replacedPerson => {
-      console.log(`${replacedPerson.name}'s contact updated to ${replacedPerson.number}`)
-      response.json(replacedPerson)
+    .findById(request.params.id)
+    .then(person => {
+      if (!person) {
+        return response.status(404).end()
+      }
+
+      person.name = name
+      person.contact = contact
+
+      return person.save().then(updatedPerson => {
+        response.json(updatedPerson)
+      }).catch(err => response.status(500).end())
     })
     .catch(err => next(err))
 })
